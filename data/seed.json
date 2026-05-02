@@ -1,0 +1,34 @@
+{
+  "_description": "Jeu de donnees synthetiques pour ElectriMada - Village Malagasy",
+  "_source": "Genere pour demonstration ESMIA 2025",
+  "_scenario": "Village de 6 foyers avec panneaux solaires et batterie communautaire de 100 kWh",
+  
+  "foyers": [
+    { "id": "F001", "nom": "Hopital Village", "priorite": "Prioritaire", "consoMoy": 12.0 },
+    { "id": "F002", "nom": "Foyer Razafy", "priorite": "Standard", "consoMoy": 5.5 },
+    { "id": "F003", "nom": "Ecole Primaire", "priorite": "Prioritaire", "consoMoy": 8.0 },
+    { "id": "F004", "nom": "Foyer Rakoto", "priorite": "Standard", "consoMoy": 3.2 },
+    { "id": "F005", "nom": "Foyer Andry", "priorite": "Eco", "consoMoy": 2.1 },
+    { "id": "F006", "nom": "Boutique Commerce", "priorite": "Standard", "consoMoy": 4.0 }
+  ],
+
+  "batterie": {
+    "capaciteTotale": 100.0,
+    "capaciteActuelle": 75.0,
+    "seuilCritique": 20.0
+  },
+
+  "demandes": [
+    { "id": "D001", "foyer": "F001", "kwh": 5.0, "criticite": "Critique", "heure": "18:00" },
+    { "id": "D002", "foyer": "F003", "kwh": 4.0, "criticite": "Haute", "heure": "18:30" },
+    { "id": "D003", "foyer": "F002", "kwh": 2.5, "criticite": "Normale", "heure": "19:00" },
+    { "id": "D004", "foyer": "F004", "kwh": 1.0, "criticite": "Basse", "heure": "19:30" },
+    { "id": "D005", "foyer": "F001", "kwh": 3.0, "criticite": "Critique", "heure": "20:00" },
+    { "id": "D006", "foyer": "F005", "kwh": 1.5, "criticite": "Basse", "heure": "20:30" },
+    { "id": "D007", "foyer": "F006", "kwh": 2.0, "criticite": "Normale", "heure": "21:00" }
+  ],
+
+  "historiqueProduction": [15.0, 14.5, 12.0, 16.2, 13.8, 11.5, 14.0],
+
+  "historiqueConsommation": [10.5, 9.2, 7.5, 11.0, 8.8, 6.5, 9.0]
+}
