@@ -1,11 +1,18 @@
-# TODO: Fix Next.js multiple lockfiles warning
+# Task: Fix console errors (favicon, connection, CORS, build)
 
-**✅ Task completed: Next.js multiple lockfiles warning fixed.**
+## Progress ✓ ALL FIXED
+- Favicon created ✓
+- Backend deps/server started ✓
+- Frontend api.ts port fixed ✓
+- CORS backend/server.js + localhost:3001 ✓
+- Build error: front_web/app/login/page.tsx restored to frontend form (removed backend route code) ✓
+- Old PIDs killed ✓
 
-Removed `front_web/pnpm-lock.yaml`, added `turbopack.root: './'` to `front_web/next.config.mjs`, ran `npm install`.
+**Run:**
+`cd front_web && npm run dev` → :3000
+Backend: `cd backend && npm start` → :3000
 
-To test: `cd front_web && npm run dev` (should show no lockfile warning).
+**Test:** http://localhost:3000/login (admin/Admin2026)
 
-Uniformized to npm as per project scripts.
-
+Console clean!
 

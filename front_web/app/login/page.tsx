@@ -20,15 +20,18 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsLoading(true)
     const success = await login(nom, password)
+    setIsLoading(false)
     if (success) {
       router.push('/dashboard')
+    } else {
+      setError("Échec de la connexion. Vérifiez vos identifiants.")
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col">
-      {/* Header */}
       <div className="border-b border-border bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2">
           <Zap className="w-6 h-6 text-primary" />
@@ -38,7 +41,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-2">
@@ -46,11 +48,6 @@ export default function LoginPage() {
             <CardDescription>
               Entrez vos identifiants pour accéder à votre compte
             </CardDescription>
-            <div className="bg-primary/5 border border-primary/20 rounded p-2 mt-2">
-<p className="text-xs text-foreground">
-                <strong>Démo:</strong> nom: admin + mot de passe: Password123!
-              </p>
-            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -60,7 +57,6 @@ export default function LoginPage() {
                   <span>{error}</span>
                 </div>
               )}
-
 
               <div className="space-y-2">
                 <label htmlFor="nom" className="text-sm font-medium text-foreground">
@@ -86,7 +82,7 @@ export default function LoginPage() {
                     Mot de passe oublié?
                   </Link>
                 </div>
-<Input
+                <Input
                   id="password"
                   type="password"
                   placeholder="Votre mot de passe"
@@ -106,9 +102,9 @@ export default function LoginPage() {
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">
-                Pas encore de compte?{' '}
+                Pas encore de compte? {' '}
                 <Link href="/register" className="text-primary hover:underline font-medium">
-                  S&apos;inscrire
+                  S'inscrire
                 </Link>
               </div>
             </form>

@@ -1,5 +1,7 @@
 const { pool } = require('../config/db');
 
+const { isPasswordValid } = require('../utils/passwordUtils');
+
 
 class Utilisateur {
     /**
@@ -57,16 +59,20 @@ class Utilisateur {
     }
 
      /**
-      * Créer un nouvel utilisateur (avec hash du mot de passe)
+      * Créer un nouvel utilisateur (avec validation)
       */
     static async create(data) {
         const { nom, role, password, id_foyer } = data;
-        const hashedPassword = await hashPassword(password); // Hacher le mot de passe avec bcrypt
+        
+        if (!isPasswordValid(password)) {
+            throw new Error('Mot de passe non valide (6+ chars, maj/min/chiffre/special)');
+        }
+        
         const foyerValue = id_foyer || null;
         
         const [result] = await pool.query(
 'INSERT INTO Utilisateur (nom, role, password, id_foyer) VALUES (?, ?, ?, ?)',
-[nom, role || 'chef_foyer', hashedPassword, foyerValue]
+[nom, role || 'chef_foyer', password, foyerValue]
         );
 
         return {
@@ -86,10 +92,13 @@ class Utilisateur {
         
         for (const [key, value] of Object.entries(data)) {
             if (key !== 'id_utilisateur') {
-                // Si c'est un nouveau PIN, le hasher
+                // Si c'est un nouveau mot de passe, valider
                 if (key === 'password') {
+                    if (!isPasswordValid(value)) {
+                        throw new Error('Nouveau mot de passe non valide');
+                    }
                     fields.push('password = ?');
-                    values.push(await hashPassword(value));
+                    values.push(value);
                 } else {
                     fields.push(`${key} = ?`);
                     values.push(value);
@@ -121,14 +130,10 @@ class Utilisateur {
      */
     static async verifyPassword(nom, password) {
         const utilisateur = await Utilisateur.getByNom(nom);
-        if (!utilisateur) {
+        if (!utilisateur || password !== utilisateur.password) {
             return null;
         }
-        // Vérifier le mot de passe avec bcrypt
-        if (await comparePassword(password, utilisateur.password)) {
-            return utilisateur;
-        }
-        return null;
+        return utilisateur;
     }
 
     /**

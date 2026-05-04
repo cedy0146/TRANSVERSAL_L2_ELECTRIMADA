@@ -23,6 +23,12 @@ const validatePassword = (password) => {
     return { isValid: true };
 };
 
+function isPasswordValid(password) {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{6,}$/;
+  return regex.test(password);
+}
+
 module.exports = { 
-  validatePassword
+  validatePassword,
+  isPasswordValid
 };
