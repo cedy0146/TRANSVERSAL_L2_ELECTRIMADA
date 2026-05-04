@@ -1,238 +1,120 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Leaf, Mail, Lock, AlertCircle } from 'lucide-react';
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Zap, AlertCircle } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [language, setLanguage] = useState('fr');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const [nom, setNom] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const { login } = useAuth()
 
-  const content = {
-    fr: {
-      title: 'Connexion EléctriMada',
-      email: 'Email',
-      password: 'Mot de passe',
-      login: 'Se connecter',
-      signup: 'Créer un compte',
-      forgotPassword: 'Mot de passe oublié?',
-      demoAccounts: 'Comptes de démonstration:',
-      admin: 'Admin',
-      user: 'Utilisateur',
-      technician: 'Technicien',
-      noAccount: 'Pas encore de compte?',
-      errorInvalid: 'Email ou mot de passe invalide',
-    },
-    mg: {
-      title: 'Miditra EléctriMada',
-      email: 'Email',
-      password: 'Tenimiafina',
-      login: 'Miditra',
-      signup: 'Hamorona kaonty',
-      forgotPassword: 'Tenimiafina adala?',
-      demoAccounts: 'Kaonty fampisehoana:',
-      admin: 'Admin',
-      user: 'Mpampiasa',
-      technician: 'Teknisiana',
-      noAccount: 'Tsy manana kaonty akory?',
-      errorInvalid: 'Email na tenimiafina diso',
-    },
-    en: {
-      title: 'EléctriMada Login',
-      email: 'Email',
-      password: 'Password',
-      login: 'Sign In',
-      signup: 'Create Account',
-      forgotPassword: 'Forgot password?',
-      demoAccounts: 'Demo Accounts:',
-      admin: 'Admin',
-      user: 'User',
-      technician: 'Technician',
-      noAccount: 'Don\'t have an account?',
-      errorInvalid: 'Invalid email or password',
-    },
-  };
-
-  const t = content[language as keyof typeof content];
-
-  const demoAccounts = [
-    { email: 'admin@electrimada.mg', password: 'admin123', role: 'admin' },
-    { email: 'user@electrimada.mg', password: 'user123', role: 'user' },
-    { email: 'tech@electrimada.mg', password: 'tech123', role: 'technician' },
-  ];
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      // Simulation d'authentification
-      const account = demoAccounts.find((acc) => acc.email === email && acc.password === password);
-      
-      if (account) {
-        // Stocker les informations de session
-        localStorage.setItem('user', JSON.stringify({ email, role: account.role }));
-        
-        // Redirection selon le rôle
-        if (account.role === 'admin') {
-          router.push('/dashboard/admin');
-        } else if (account.role === 'technician') {
-          router.push('/dashboard/technician');
-        } else {
-          router.push('/dashboard/user');
-        }
-      } else {
-        setError(t.errorInvalid);
-      }
-    } catch (err) {
-      setError(t.errorInvalid);
-    } finally {
-      setLoading(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    const success = await login(nom, password)
+    if (success) {
+      router.push('/dashboard')
     }
-  };
-
-  const fillDemoAccount = (account: typeof demoAccounts[0]) => {
-    setEmail(account.email);
-    setPassword(account.password);
-    setError('');
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Language Selector */}
-      <div className="absolute top-4 right-4">
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="bg-slate-800 text-white px-3 py-2 rounded border border-emerald-500/30"
-        >
-          <option value="fr">Français</option>
-          <option value="mg">Malagasy</option>
-          <option value="en">English</option>
-        </select>
-      </div>
-
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2 text-white">
-            <Leaf className="w-8 h-8 text-emerald-400" />
-            <span className="text-2xl font-bold">EléctriMada</span>
-          </div>
-        </div>
-
-        {/* Login Card */}
-        <Card className="bg-slate-800/50 border-emerald-500/30 p-8 backdrop-blur-sm">
-          <h1 className="text-2xl font-bold text-white mb-6 text-center">{t.title}</h1>
-
-          {error && (
-            <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-red-200">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">{t.email}</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="user@example.com"
-                  className="bg-slate-700 border-slate-600 text-white pl-10 placeholder-slate-500"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">{t.password}</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="bg-slate-700 border-slate-600 text-white pl-10 placeholder-slate-500"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center text-sm">
-              <label className="flex items-center gap-2 text-slate-300">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded bg-slate-700 border-slate-600"
-                />
-                {language === 'fr' ? 'Se souvenir de moi' : language === 'mg' ? 'Tsarovy ahy' : 'Remember me'}
-              </label>
-              <a href="#" className="text-emerald-400 hover:text-emerald-300">
-                {t.forgotPassword}
-              </a>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2"
-            >
-              {loading ? (language === 'fr' ? 'Connexion...' : language === 'mg' ? 'Miditra...' : 'Signing in...') : t.login}
-            </Button>
-          </form>
-
-          {/* Demo Accounts */}
-          <div className="border-t border-slate-600 pt-6">
-            <p className="text-sm text-slate-300 mb-4 font-semibold">{t.demoAccounts}</p>
-            <div className="space-y-2">
-              {demoAccounts.map((account, index) => {
-                const roleNames = {
-                  admin: t.admin,
-                  user: t.user,
-                  technician: t.technician,
-                };
-                return (
-                  <button
-                    key={index}
-                    onClick={() => fillDemoAccount(account)}
-                    className="w-full text-left p-3 rounded bg-slate-700/50 hover:bg-slate-700 border border-slate-600 hover:border-emerald-500/50 transition text-sm text-slate-200"
-                  >
-                    <div className="font-medium text-emerald-400">{roleNames[account.role as keyof typeof roleNames]}</div>
-                    <div className="text-xs text-slate-400">{account.email}</div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-6 text-center text-sm text-slate-300">
-            {t.noAccount}{' '}
-            <Link href="/signup" className="text-emerald-400 hover:text-emerald-300 font-medium">
-              {t.signup}
-            </Link>
-          </div>
-        </Card>
-
-        {/* Back Link */}
-        <div className="mt-6 text-center">
-          <Link href="/landing" className="text-slate-400 hover:text-slate-300 text-sm">
-            ← {language === 'fr' ? 'Retour à l\'accueil' : language === 'mg' ? 'Buvy ho amin\'ny pejy homana' : 'Back to home'}
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col">
+      {/* Header */}
+      <div className="border-b border-border bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2">
+          <Zap className="w-6 h-6 text-primary" />
+          <Link href="/" className="text-xl font-bold text-primary">
+            EléctriMada
           </Link>
         </div>
       </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-2xl">Connexion</CardTitle>
+            <CardDescription>
+              Entrez vos identifiants pour accéder à votre compte
+            </CardDescription>
+            <div className="bg-primary/5 border border-primary/20 rounded p-2 mt-2">
+<p className="text-xs text-foreground">
+                <strong>Démo:</strong> nom: admin + mot de passe: Password123!
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex gap-2 text-sm text-destructive">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+
+              <div className="space-y-2">
+                <label htmlFor="nom" className="text-sm font-medium text-foreground">
+                  Nom d'utilisateur
+                </label>
+                <Input
+                  id="nom"
+                  type="text"
+                  placeholder="Votre nom"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  disabled={isLoading}
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-sm font-medium text-foreground">
+                    Mot de passe
+                  </label>
+                  <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                    Mot de passe oublié?
+                  </Link>
+                </div>
+<Input
+                  id="password"
+                  type="password"
+                  placeholder="Votre mot de passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  className="h-10"
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-10" 
+                disabled={isLoading}
+              >
+                {isLoading ? 'Connexion...' : 'Se connecter'}
+              </Button>
+
+              <div className="text-center text-sm text-muted-foreground">
+                Pas encore de compte?{' '}
+                <Link href="/register" className="text-primary hover:underline font-medium">
+                  S&apos;inscrire
+                </Link>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  );
+  )
 }

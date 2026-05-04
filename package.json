@@ -9,5 +9,13 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "description": ""
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cedy0146/TRANSVERSAL_L2_ELECTRIMADA.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cedy0146/TRANSVERSAL_L2_ELECTRIMADA/issues"
+  },
+  "homepage": "https://github.com/cedy0146/TRANSVERSAL_L2_ELECTRIMADA#readme"
 }
