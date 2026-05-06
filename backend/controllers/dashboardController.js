@@ -1,58 +1,42 @@
-const Foyer = require('../models/Foyer');
+const Utilisateur = require('../models/Utilisateur');
 const Batterie = require('../models/Batterie');
-const Alerte = require('../models/Alerte');
-const TypeAppareil = require('../models/TypeAppareil');
+const Foyer = require('../models/Foyer');
 const DemandeEnergie = require('../models/DemandeEnergie');
 
-// Cache pour stats
-const statsCache = new Map();
-
 const dashboardController = {
-  getStats: async (req, res) => {
-    try {
-      const cacheKey = 'dashboard_stats';
-      const cached = statsCache.get(cacheKey);
-      const now = Date.now();
+    getStats: async (req, res) => {
+        console.log("[Dashboard] Début de la récupération des statistiques...");
+        try {
+            console.log("  -> Récupération Utilisateur.getStats()...");
+            const userStats = await Utilisateur.getStats();
+            
+            console.log("  -> Récupération Batterie.getStats()...");
+            const batterieStats = await Batterie.getStats();
+            
+            console.log("  -> Récupération Foyer.count()...");
+            const foyerCount = await Foyer.count();
+            
+            console.log("  -> Récupération DemandeEnergie.getStats()...");
+            const demandeStats = await DemandeEnergie.getStats();
 
-      // Vérifie le cache (5 min)
-      if (cached && (now - cached.timestamp) < 5 * 60 * 1000) {
-        return res.json({ success: true, data: cached.data });
-      }
-
-      // Récupération des données en parallèle
-      const [foyers, batteries, alertes, appareils, demandes] = await Promise.all([
-        Foyer.getAll(),
-        Batterie.getAll(),
-        Alerte.getAll(),
-        TypeAppareil.getAll(),
-        DemandeEnergie.getAll()
-      ]);
-
-      // Calcul consommation totale
-      const totalConso = foyers.reduce((sum, f) => sum + parseFloat(f.consommation_moyenne || 0), 0);
-
-      // Construction des stats
-      const stats = {
-        conso_actuelle: totalConso.toFixed(1) + ' kW',
-        conso_mensuelle: (totalConso * 24 * 30).toFixed(1) + ' kWh',
-        cout_estime: parseInt(totalConso * 24 * 30 * 180).toLocaleString() + ' Ar',
-        appareils_actifs: appareils.length,
-        batteries_ok: batteries.filter(b => (b.niveau || 0) > 20).length,
-        alertes: alertes.slice(0, 5),
-        appareils: appareils.slice(0, 4),
-        demandes_total: demandes.length
-      };
-
-      // Mise en cache
-      statsCache.set(cacheKey, { data: stats, timestamp: now });
-
-      // Réponse JSON
-      res.json({ success: true, data: stats });
-    } catch (err) {
-      console.error('Dashboard stats error:', err);
-      res.status(500).json({ success: false, error: 'Erreur stats' });
+            console.log("✅ Statistiques récupérées avec succès.");
+            res.json({
+                success: true,
+                data: {
+                    userStats: userStats,
+                    batterieStats: batterieStats,
+                    foyerStats: { total: foyerCount },
+                    demandeStats: demandeStats
+                }
+            });
+        } catch (error) {
+            console.error('[Dashboard] ERREUR CRITIQUE:', error);
+            res.status(500).json({ 
+                success: false, 
+                error: error.message || 'Erreur interne du serveur lors de la recuperation des statistiques.' 
+            });
+        }
     }
-  }
 };
 
 module.exports = dashboardController;

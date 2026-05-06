@@ -3,9 +3,11 @@ const Rapport = require('../models/Rapport');
 const rapportController = {
     getAll: async (req, res) => {
         try {
+            console.log("[Rapports] Récupération de la liste complète...");
             const rapports = await Rapport.getAll();
             res.json({ success: true, data: rapports, count: rapports.length });
         } catch (err) {
+            console.error("[Rapports] Erreur lors du getAll:", err);
             res.status(500).json({ success: false, error: err.message });
         }
     },

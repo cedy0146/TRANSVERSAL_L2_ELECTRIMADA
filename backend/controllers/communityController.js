@@ -55,11 +55,11 @@ const communityController = {
             // Transformer en format membre
             const members = foyers.map(f => ({
                 id: f.id_foyer,
-                name: f.nom,
+                name: f.nom_responsable, // Correction du nom
                 household: f.id_foyer,
                 status: 'active',
                 priorite: f.type_priorite,
-                consommation: f.consommation_moyenne
+                consommation: f.conso_estimee // Correction du nom
             }));
             
             // Pour une communauté unique, on retourne tous les foyers

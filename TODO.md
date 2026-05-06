@@ -1,18 +1,11 @@
-# Task: Fix console errors (favicon, connection, CORS, build)
+# Fix /api/dashboard/stats 500 Error
+## Steps:
+- [x] Analyser code et fichiers (routes OK, controller fetch all data, models OK, init.sql OK)
+- [x] Confirmer plan avec user (optimiser avec COUNT, ajouter users stats)
+- [x] Mettre à jour dashboardController.js (queries optimisées, fix niveau batterie, add totalUsers)
+- [x] Redémarrer backend (`npm start` lancé)
+- [x] Test API (curl OK)
+- [ ] Vérifier frontend
 
-## Progress ✓ ALL FIXED
-- Favicon created ✓
-- Backend deps/server started ✓
-- Frontend api.ts port fixed ✓
-- CORS backend/server.js + localhost:3001 ✓
-- Build error: front_web/app/login/page.tsx restored to frontend form (removed backend route code) ✓
-- Old PIDs killed ✓
-
-**Run:**
-`cd front_web && npm run dev` → :3000
-Backend: `cd backend && npm start` → :3000
-
-**Test:** http://localhost:3000/login (admin/Admin2026)
-
-Console clean!
-
+## Status
+Plan approved. Procédant aux éditions.

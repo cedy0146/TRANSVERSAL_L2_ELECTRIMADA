@@ -1,84 +1,39 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config();
 
-const dbConfig = {
+/**
+ * Configuration du pool de connexion MySQL
+ * Utilise mysql2/promise pour supporter async/await utilisé dans les modèles
+ */
+const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'ElectriMadaDB',
-    port: process.env.DB_PORT || 3306,
+    database: process.env.DB_NAME || 'electrimada',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
-};
+});
 
-const pool = mysql.createPool(dbConfig);
-
-// Fonction pour creer la base de donnees si elle n'existe pas
-async function initDatabase() {
-    let connection;
-    try {
-        // Connexion sans base de donnees
-        connection = await mysql.createConnection({
-            host: dbConfig.host,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            port: dbConfig.port
-        });
-        
-        // Creer la base si elle n'existe pas
-        await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-        console.log('✅ Base de donnees ' + dbConfig.database + ' creee ou existante');
-        
-        // Utiliser la base
-        await connection.query(`USE ${dbConfig.database}`);
-        
-        // Lire et executer le script init.sql
-        const fs = require('fs');
-        const path = require('path');
-        const initSqlPath = path.join(__dirname, '../../data/init.sql');
-        
-        if (fs.existsSync(initSqlPath)) {
-            const sql = fs.readFileSync(initSqlPath, 'utf8');
-            // Separer les instructions par point-virgule
-            const statements = sql.split(';').filter(stmt => stmt.trim());
-            
-            for (const statement of statements) {
-                if (statement.trim()) {
-                    try {
-                        await connection.query(statement);
-                    } catch (err) {
-                        // Ignorer les erreurs de tables existantes (IF NOT EXISTS)
-                        if (!err.message.includes('already exists')) {
-                            console.log('  Note:', err.message);
-                        }
-                    }
-                }
-            }
-            console.log('✅ Tables initialisees avec succes');
-        } else {
-            console.log('⚠ Fichier init.sql non trouve:', initSqlPath);
-        }
-        
-        await connection.end();
-        return true;
-    } catch (err) {
-        console.error('❌ Erreur lors de l\'initialisation:', err.message);
-        if (connection) await connection.end();
-        return false;
-    }
-}
-
-async function testConnection() {
+/**
+ * Teste la connexion au pool MySQL
+ */
+const testConnection = async () => {
     try {
         const connection = await pool.getConnection();
-        console.log('✅ Connexion MySQL reussie !');
+        console.log('✅ Connexion à la base de données MySQL réussie.');
         connection.release();
-        return true;
     } catch (err) {
-        console.error('❌ Erreur connexion MySQL:', err.message);
-        return false;
+        console.error('❌ Erreur de connexion à MySQL:', err.message);
     }
-}
+};
+
+/**
+ * Initialisation de la base de données (si nécessaire)
+ */
+const initDatabase = async () => {
+    // Les schémas et la création des tables sont désormais gérés par 
+    // les modèles ou des scripts SQL externes.
+    console.log('📡 Pool de connexion MySQL configuré et prêt.');
+};
 
 module.exports = { pool, testConnection, initDatabase };

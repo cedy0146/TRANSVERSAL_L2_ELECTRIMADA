@@ -73,8 +73,12 @@ app.use((req, res) => {
 
 // Gestion des erreurs globales
 app.use((err, req, res, next) => {
-    console.error('Erreur:', err);
-    res.status(500).json({ success: false, error: 'Erreur interne du serveur' });
+    console.error(' [Global Error Handler] ', err);
+    res.status(500).json({ 
+        success: false, 
+        error: 'Erreur interne du serveur',
+        message: err.message // Renvoie le message d'erreur réel pour le debug
+    });
 });
 
 // Demarrage du serveur uniquement si ce fichier est execute directement

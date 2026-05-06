@@ -1,8 +1,5 @@
 const { pool } = require('../config/db');
 
-const { isPasswordValid } = require('../utils/passwordUtils');
-
-
 class Utilisateur {
     /**
      * Obtenir un utilisateur par ID
@@ -59,14 +56,10 @@ class Utilisateur {
     }
 
      /**
-      * Créer un nouvel utilisateur (avec validation)
+      * Créer un nouvel utilisateur
       */
     static async create(data) {
         const { nom, role, password, id_foyer } = data;
-        
-        if (!isPasswordValid(password)) {
-            throw new Error('Mot de passe non valide (6+ chars, maj/min/chiffre/special)');
-        }
         
         const foyerValue = id_foyer || null;
         
@@ -92,17 +85,8 @@ class Utilisateur {
         
         for (const [key, value] of Object.entries(data)) {
             if (key !== 'id_utilisateur') {
-                // Si c'est un nouveau mot de passe, valider
-                if (key === 'password') {
-                    if (!isPasswordValid(value)) {
-                        throw new Error('Nouveau mot de passe non valide');
-                    }
-                    fields.push('password = ?');
-                    values.push(value);
-                } else {
-                    fields.push(`${key} = ?`);
-                    values.push(value);
-                }
+                fields.push(`${key} = ?`);
+                values.push(value);
             }
         }
         values.push(id);
@@ -123,17 +107,6 @@ class Utilisateur {
             [id]
         );
         return result.affectedRows > 0;
-    }
-
-    /**
-     * Vérifier le mot de passe d'un utilisateur
-     */
-    static async verifyPassword(nom, password) {
-        const utilisateur = await Utilisateur.getByNom(nom);
-        if (!utilisateur || password !== utilisateur.password) {
-            return null;
-        }
-        return utilisateur;
     }
 
     /**

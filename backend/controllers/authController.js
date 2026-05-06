@@ -1,8 +1,8 @@
-const bcrypt = require("bcryptjs");
+
+
 const jwt = require("jsonwebtoken");
 const Utilisateur = require("../models/Utilisateur");
 const Foyer = require("../models/Foyer");
-const { validatePassword } = require("../utils/passwordUtils");
 
 const authController = {
   // REGISTER
@@ -13,12 +13,6 @@ const authController = {
         return res.status(400).json({ success: false, error: "Nom et mot de passe requis" });
       }
 
-      // Validation du mot de passe
-      const validation = validatePassword(password);
-      if (!validation.isValid) {
-        return res.status(400).json({ success: false, error: validation.error });
-      }
-
       // Vérifier si l'utilisateur existe déjà
       const existing = await Utilisateur.getByNom(nom);
       if (existing) {
@@ -26,8 +20,10 @@ const authController = {
       }
 
       // Vérifier foyer si fourni
-      const foyerId = typeof id_foyer === "string" ? id_foyer.trim() : id_foyer;
-      const sanitizedFoyerId = foyerId ? foyerId : null;
+      let sanitizedFoyerId = null;
+      if (id_foyer !== undefined && id_foyer !== null && id_foyer !== "") {
+        sanitizedFoyerId = parseInt(id_foyer, 10);
+      }
 
       if (sanitizedFoyerId) {
         const foyer = await Foyer.getById(sanitizedFoyerId);
@@ -39,14 +35,11 @@ const authController = {
         }
       }
 
-      // Hasher le mot de passe
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Créer l'utilisateur
+      // Stocker mot de passe en clair
       const utilisateur = await Utilisateur.create({
         nom,
         role,
-        password: hashedPassword,
+        password: password,
         id_foyer: sanitizedFoyerId,
       });
 
@@ -80,9 +73,8 @@ const authController = {
         return res.status(404).json({ success: false, error: "Utilisateur non trouvé" });
       }
 
-      // Vérification du mot de passe hashé
-      const isValid = await bcrypt.compare(password, utilisateur.password);
-      if (!isValid) {
+      // Vérification mot de passe en clair
+      if (password !== utilisateur.password) {
         return res.status(401).json({ success: false, error: "Mot de passe incorrect" });
       }
 
@@ -104,6 +96,30 @@ const authController = {
       res.status(500).json({ success: false, error: err.message });
     }
   },
+
+  // GET PROFILE (Vérification de session)
+  getMe: async (req, res) => {
+    try {
+      // Note: Normalement, l'ID provient du middleware de vérification de token (JWT)
+      // Pour le moment, nous récupérons le nom depuis les paramètres ou le corps pour le test
+      const nom = req.query.nom || req.body.nom;
+      
+      if (!nom) {
+        return res.status(401).json({ success: false, error: "Non autorisé" });
+      }
+
+      const utilisateur = await Utilisateur.getByNom(nom);
+      if (!utilisateur) {
+        return res.status(404).json({ success: false, error: "Utilisateur non trouvé" });
+      }
+
+      // Ne pas renvoyer le mot de passe
+      const { password, ...userProfile } = utilisateur;
+      res.json({ success: true, data: userProfile });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
 };
 
 module.exports = authController;

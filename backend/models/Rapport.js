@@ -20,12 +20,12 @@ class Rapport {
     }
 
     static async create(data) {
-        const { id_rapport, date_rapport, consommation_totale, batterie_debut, batterie_fin } = data;
+        const { id_communaute, jour_semaine, consommation_totale, production_solaire, batterie_debut, batterie_fin, nb_demandes_traitees, nb_demandes_refusees, date_rapport } = data;
         const [result] = await pool.query(
-            'INSERT INTO Rapport (id_rapport, date_rapport, consommation_totale, batterie_debut, batterie_fin) VALUES (?, ?, ?, ?, ?)',
-            [id_rapport, date_rapport, consommation_totale, batterie_debut, batterie_fin]
+            'INSERT INTO Rapport (id_communaute, jour_semaine, consommation_totale, production_solaire, batterie_debut, batterie_fin, nb_demandes_traitees, nb_demandes_refusees, date_rapport) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id_communaute, jour_semaine, consommation_totale, production_solaire, batterie_debut, batterie_fin, nb_demandes_traitees || 0, nb_demandes_refusees || 0, date_rapport]
         );
-        return { id_rapport, ...data };
+        return { id_rapport: result.insertId, ...data };
     }
 
     static async update(id, data) {

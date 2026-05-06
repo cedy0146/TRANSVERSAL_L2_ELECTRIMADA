@@ -6,7 +6,7 @@ class DemandeEnergie {
      */
     static async getAll() {
         const [rows] = await pool.query(`
-            SELECT d.*, f.nom as nom_foyer 
+            SELECT d.*, f.nom_responsable as nom_foyer 
             FROM DemandeEnergie d 
             LEFT JOIN Foyer f ON d.id_foyer = f.id_foyer
             ORDER BY d.date_demande DESC
@@ -19,7 +19,7 @@ class DemandeEnergie {
      */
     static async getById(id) {
         const [rows] = await pool.query(`
-            SELECT d.*, f.nom as nom_foyer 
+            SELECT d.*, f.nom_responsable as nom_foyer 
             FROM DemandeEnergie d 
             LEFT JOIN Foyer f ON d.id_foyer = f.id_foyer
             WHERE d.id_demande = ?
@@ -43,15 +43,16 @@ class DemandeEnergie {
      */
     static async getPending() {
         const [rows] = await pool.query(`
-            SELECT d.*, f.nom as nom_foyer 
+            SELECT d.*, f.nom_responsable as nom_foyer 
             FROM DemandeEnergie d 
             LEFT JOIN Foyer f ON d.id_foyer = f.id_foyer
-            WHERE d.statut = 'pending'
+            WHERE d.statut = 'en_attente'
             ORDER BY 
                 CASE d.priorite 
-                    WHEN 'high' THEN 1 
-                    WHEN 'medium' THEN 2 
-                    WHEN 'low' THEN 3 
+                    WHEN 'Critique' THEN 1
+                    WHEN 'Haute' THEN 2 
+                    WHEN 'Moyenne' THEN 3 
+                    WHEN 'Basse' THEN 4 
                 END,
                 d.date_demande ASC
         `);
@@ -63,10 +64,10 @@ class DemandeEnergie {
      */
     static async getAccepted() {
         const [rows] = await pool.query(`
-            SELECT d.*, f.nom as nom_foyer 
+            SELECT d.*, f.nom_responsable as nom_foyer 
             FROM DemandeEnergie d 
             LEFT JOIN Foyer f ON d.id_foyer = f.id_foyer
-            WHERE d.statut = 'approved'
+            WHERE d.statut = 'approuvee'
             ORDER BY d.date_demande DESC
         `);
         return rows;
@@ -77,10 +78,10 @@ class DemandeEnergie {
      */
     static async getRejected() {
         const [rows] = await pool.query(`
-            SELECT d.*, f.nom as nom_foyer 
+            SELECT d.*, f.nom_responsable as nom_foyer 
             FROM DemandeEnergie d 
             LEFT JOIN Foyer f ON d.id_foyer = f.id_foyer
-            WHERE d.statut = 'rejected'
+            WHERE d.statut = 'rejete'
             ORDER BY d.date_demande DESC
         `);
         return rows;
@@ -90,14 +91,14 @@ class DemandeEnergie {
      * Creer une nouvelle demande
      */
     static async create(data) {
-        const { id_foyer, energie_demandee, priorite, plage_horaire, type_appareil } = data;
+        const { id_foyer, id_appareil, quantite_kwh, priorite } = data;
         const [result] = await pool.query(
             `INSERT INTO DemandeEnergie 
-            (id_foyer, energie_demandee, priorite, plage_horaire, type_appareil, statut) 
-            VALUES (?, ?, ?, ?, ?, 'pending')`,
-            [id_foyer, energie_demandee, priorite || 'medium', plage_horaire, type_appareil]
+            (id_foyer, id_appareil, quantite_kwh, priorite, statut) 
+            VALUES (?, ?, ?, ?, 'en_attente')`,
+            [id_foyer, id_appareil, quantite_kwh, priorite || 'Moyenne']
         );
-        return { id_demande: result.insertId, ...data, statut: 'pending' };
+        return { id_demande: result.insertId, ...data, statut: 'en_attente' };
     }
 
     /**
@@ -127,7 +128,7 @@ class DemandeEnergie {
      */
     static async accepter(id) {
         const [result] = await pool.query(
-            'UPDATE DemandeEnergie SET statut = \'approved\' WHERE id_demande = ?',
+            'UPDATE DemandeEnergie SET statut = \'approuvee\' WHERE id_demande = ?',
             [id]
         );
         return result.affectedRows > 0;
@@ -138,7 +139,7 @@ class DemandeEnergie {
      */
     static async rejeter(id, raison_refus) {
         const [result] = await pool.query(
-            'UPDATE DemandeEnergie SET statut = \'rejected\', raison_refus = ? WHERE id_demande = ?',
+            'UPDATE DemandeEnergie SET statut = \'rejete\', raison_refus = ? WHERE id_demande = ?',
             [raison_refus, id]
         );
         return result.affectedRows > 0;
@@ -162,10 +163,10 @@ class DemandeEnergie {
         const [rows] = await pool.query(`
             SELECT 
                 COUNT(*) as total,
-                SUM(CASE WHEN statut = 'pending' THEN 1 ELSE 0 END) as en_attente,
-                SUM(CASE WHEN statut = 'approved' THEN 1 ELSE 0 END) as approuvees,
-                SUM(CASE WHEN statut = 'rejected' THEN 1 ELSE 0 END) as rejetees,
-                SUM(energie_demandee) as energie_totale
+                SUM(CASE WHEN statut = 'en_attente' THEN 1 ELSE 0 END) as en_attente,
+                SUM(CASE WHEN statut = 'approuvee' THEN 1 ELSE 0 END) as approuvees,
+                SUM(CASE WHEN statut = 'rejete' THEN 1 ELSE 0 END) as rejetees,
+                SUM(quantite_kwh) as energie_totale
             FROM DemandeEnergie
         `);
         return rows[0];

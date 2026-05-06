@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Zap, Home, BarChart3, Settings, LogOut, Menu, X, Users, FileText, Bell } from 'lucide-react'
+import { Zap, Home, BarChart3, Settings, LogOut, Menu, X, Users, FileText, Bell, User as UserIcon } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
 export default function DashboardLayout({
@@ -13,7 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [isOpen, setIsOpen] = useState(false)
-  const { isAuthenticated, logout } = useAuth()
+  const { isAuthenticated, logout, user } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export default function DashboardLayout({
               </button>
 
               <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-                JD
+                {user?.nom ? user.nom.substring(0, 2).toUpperCase() : <UserIcon size={18} />}
               </div>
             </div>
           </div>
